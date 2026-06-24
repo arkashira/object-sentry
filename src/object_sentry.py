@@ -1,37 +1,34 @@
 import json
+import platform
+import time
 from dataclasses import dataclass
 from typing import List
 
 @dataclass
-class ObjectDetectionModel:
+class HardwareAccelerator:
     name: str
-    config: dict
+    latency: float
 
-class ObjectSentry:
-    def __init__(self):
-        self.models = [
-            ObjectDetectionModel("Model1", {"param1": 1, "param2": 2}),
-            ObjectDetectionModel("Model2", {"param3": 3, "param4": 4}),
-        ]
+def detect_hardware_accelerators() -> List[HardwareAccelerator]:
+    """Detect available hardware accelerators"""
+    accelerators = []
+    if platform.system() == 'Linux':
+        # Simulate detection of GPUs, TPUs, and CPU resources
+        accelerators.append(HardwareAccelerator('GPU', 0.1))
+        accelerators.append(HardwareAccelerator('TPU', 0.05))
+        accelerators.append(HardwareAccelerator('CPU', 1.0))
+    return accelerators
 
-    def get_available_models(self):
-        return [model.name for model in self.models]
+def select_optimal_accelerator(accelerators: List[HardwareAccelerator]) -> HardwareAccelerator:
+    """Select the fastest hardware accelerator"""
+    return min(accelerators, key=lambda x: x.latency)
 
-    def select_model(self, model_name):
-        for model in self.models:
-            if model.name == model_name:
-                return model
-        raise ValueError("Model not found")
+def benchmark_accelerator(accelerator: HardwareAccelerator) -> float:
+    """Benchmark the selected hardware accelerator"""
+    # Simulate benchmarking
+    time.sleep(accelerator.latency)
+    return accelerator.latency
 
-    def configure_model(self, model_name, config):
-        model = self.select_model(model_name)
-        if not isinstance(config, dict):
-            raise ValueError("Invalid config")
-        model.config = config
-        return model
-
-    def validate_model_config(self, model_name, config):
-        if not isinstance(config, dict):
-            raise ValueError("Invalid config")
-        # Add more validation logic here
-        return True
+def fallback_to_cpu() -> HardwareAccelerator:
+    """Fallback to CPU inference when no accelerator is present"""
+    return HardwareAccelerator('CPU', 1.0)
