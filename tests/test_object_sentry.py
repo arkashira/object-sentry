@@ -1,33 +1,30 @@
-import pytest
-from object_sentry import detect_hardware_accelerators, select_optimal_accelerator, benchmark_accelerator, fallback_to_cpu
+from object_sentry import ObjectSentry, FileUpload
 
-def test_detect_hardware_accelerators():
-    accelerators = detect_hardware_accelerators()
-    assert len(accelerators) == 3
-    assert accelerators[0].name == 'GPU'
-    assert accelerators[1].name == 'TPU'
-    assert accelerators[2].name == 'CPU'
+def test_validate_file_upload_valid_format():
+    object_sentry = ObjectSentry()
+    file_upload = FileUpload("test.jpg", "image/jpeg", b"file_data")
+    assert object_sentry.validate_file_upload(file_upload) == True
 
-def test_select_optimal_accelerator():
-    accelerators = detect_hardware_accelerators()
-    optimal_accelerator = select_optimal_accelerator(accelerators)
-    assert optimal_accelerator.name == 'TPU'
-    assert optimal_accelerator.latency == 0.05
+def test_validate_file_upload_invalid_format():
+    object_sentry = ObjectSentry()
+    file_upload = FileUpload("test.txt", "text/plain", b"file_data")
+    assert object_sentry.validate_file_upload(file_upload) == False
 
-def test_benchmark_accelerator():
-    accelerators = detect_hardware_accelerators()
-    optimal_accelerator = select_optimal_accelerator(accelerators)
-    latency = benchmark_accelerator(optimal_accelerator)
-    assert latency == 0.05
+def test_upload_file_valid_format():
+    object_sentry = ObjectSentry()
+    file_upload = FileUpload("test.jpg", "image/jpeg", b"file_data")
+    assert object_sentry.upload_file(file_upload) == "File test.jpg uploaded successfully"
 
-def test_fallback_to_cpu():
-    cpu_accelerator = fallback_to_cpu()
-    assert cpu_accelerator.name == 'CPU'
-    assert cpu_accelerator.latency == 1.0
+def test_upload_file_invalid_format():
+    object_sentry = ObjectSentry()
+    file_upload = FileUpload("test.txt", "text/plain", b"file_data")
+    try:
+        object_sentry.upload_file(file_upload)
+        assert False
+    except ValueError as e:
+        assert str(e) == "Invalid file format"
 
-def test_benchmark_suite():
-    accelerators = detect_hardware_accelerators()
-    optimal_accelerator = select_optimal_accelerator(accelerators)
-    latency = benchmark_accelerator(optimal_accelerator)
-    cpu_latency = benchmark_accelerator(fallback_to_cpu())
-    assert (cpu_latency - latency) / cpu_latency >= 0.3
+def test_detect_objects():
+    object_sentry = ObjectSentry()
+    file_upload = FileUpload("test.jpg", "image/jpeg", b"file_data")
+    assert object_sentry.detect_objects(file_upload) == ["object1", "object2"]

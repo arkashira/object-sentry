@@ -1,34 +1,45 @@
+import argparse
+import dataclasses
 import json
-import platform
-import time
-from dataclasses import dataclass
 from typing import List
 
-@dataclass
-class HardwareAccelerator:
-    name: str
-    latency: float
+@dataclasses.dataclass
+class FileUpload:
+    filename: str
+    content_type: str
+    data: bytes
 
-def detect_hardware_accelerators() -> List[HardwareAccelerator]:
-    """Detect available hardware accelerators"""
-    accelerators = []
-    if platform.system() == 'Linux':
-        # Simulate detection of GPUs, TPUs, and CPU resources
-        accelerators.append(HardwareAccelerator('GPU', 0.1))
-        accelerators.append(HardwareAccelerator('TPU', 0.05))
-        accelerators.append(HardwareAccelerator('CPU', 1.0))
-    return accelerators
+class ObjectSentry:
+    def __init__(self):
+        self.supported_formats = ['image/jpeg', 'image/png', 'video/mp4']
 
-def select_optimal_accelerator(accelerators: List[HardwareAccelerator]) -> HardwareAccelerator:
-    """Select the fastest hardware accelerator"""
-    return min(accelerators, key=lambda x: x.latency)
+    def validate_file_upload(self, file_upload: FileUpload) -> bool:
+        if file_upload.content_type not in self.supported_formats:
+            return False
+        return True
 
-def benchmark_accelerator(accelerator: HardwareAccelerator) -> float:
-    """Benchmark the selected hardware accelerator"""
-    # Simulate benchmarking
-    time.sleep(accelerator.latency)
-    return accelerator.latency
+    def upload_file(self, file_upload: FileUpload) -> str:
+        if not self.validate_file_upload(file_upload):
+            raise ValueError("Invalid file format")
+        return f"File {file_upload.filename} uploaded successfully"
 
-def fallback_to_cpu() -> HardwareAccelerator:
-    """Fallback to CPU inference when no accelerator is present"""
-    return HardwareAccelerator('CPU', 1.0)
+    def detect_objects(self, file_upload: FileUpload) -> List[str]:
+        # Simulate object detection
+        return ["object1", "object2"]
+
+def main():
+    parser = argparse.ArgumentParser(description="Object Sentry")
+    parser.add_argument("--filename", help="Filename to upload")
+    parser.add_argument("--content-type", help="Content type of the file")
+    args = parser.parse_args()
+
+    object_sentry = ObjectSentry()
+    file_upload = FileUpload(args.filename, args.content_type, b"file_data")
+    try:
+        result = object_sentry.upload_file(file_upload)
+        print(result)
+    except ValueError as e:
+        print(e)
+
+if __name__ == "__main__":
+    main()
